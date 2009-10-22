@@ -1,0 +1,12 @@
+LIBRARY	"FontMapper"
+
+EXPORTS
+	GetPluginInfo			@1
+	OnPluginInit			@2
+	OnPluginClose			@3
+	OnPluginOption			@4
+
+	OnObjectInit			@5
+	OnObjectClose			@6
+	OnObjectMove			@7
+	OnObjectOption			@8

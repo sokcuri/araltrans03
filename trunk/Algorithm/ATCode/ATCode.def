@@ -1,0 +1,9 @@
+ ; ATCode.def : Declares the module parameters for the DLL.
+
+LIBRARY      "ATCode"
+
+EXPORTS
+	GetPluginInfo		@1
+	OnPluginInit		@2
+	OnPluginClose		@3
+	OnPluginOption		@4

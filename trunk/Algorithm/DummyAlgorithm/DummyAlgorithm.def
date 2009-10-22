@@ -1,0 +1,8 @@
+LIBRARY	"DummyAlgorithm"
+
+EXPORTS
+	GetPluginInfo			@1
+
+	OnPluginInit			@2
+	OnPluginClose			@3
+	OnPluginOption			@4
