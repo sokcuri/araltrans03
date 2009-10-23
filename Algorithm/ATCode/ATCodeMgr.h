@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../DefStruct.h"
+#include "../../Common/DefStruct.h"
 #include "OptionMgr.h"
 #include <list>
 #include <map>

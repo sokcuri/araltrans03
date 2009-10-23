@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../DefStruct.h"		// AralTrans 함수 및 구조체가 정의된 헤더 파일 Include
+#include "../../Common/DefStruct.h"		// AralTrans 함수 및 구조체가 정의된 헤더 파일 Include
 
 struct FONT_MAPPER_OPTION
 {

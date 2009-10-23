@@ -13,7 +13,7 @@
 // Windows 헤더 파일:
 #include <windows.h>
 #include <tchar.h>
-#include "../../DefStruct.h"		// AralTrans 함수 및 구조체가 정의된 헤더 파일 Include
+#include "../../Common/DefStruct.h"		// AralTrans 함수 및 구조체가 정의된 헤더 파일 Include
 #include "resource.h"
 #include <stdlib.h>
 
