@@ -218,7 +218,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\DefStruct.h"
+				RelativePath="..\..\Common\DefStruct.h"
 				>
 			</File>
 			<File
@@ -253,11 +253,11 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\ReadMe.txt"
+			RelativePath="..\DummyFilter\ReadMe.txt"
 			>
 		</File>
 		<File
-			RelativePath="..\DummyFilter\ReadMe.txt"
+			RelativePath=".\ReadMe.txt"
 			>
 		</File>
 	</Files>

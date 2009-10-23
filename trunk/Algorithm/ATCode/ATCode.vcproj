@@ -209,7 +209,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\DefStruct.h"
+				RelativePath="..\..\Common\DefStruct.h"
 				>
 			</File>
 			<File

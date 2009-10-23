@@ -8,7 +8,7 @@
 #endif
 
 #include "resource.h"		// main symbols
-#include "../../DefStruct.h"
+#include "../../Common/DefStruct.h"
 #include <string>
 
 #define EZTR_INIT_STR "CSUSER123455"

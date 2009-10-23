@@ -7,7 +7,7 @@
 #define AFX_SCRIPT_H__B660F339_1BCC_4680_ADCA_A55BE12755D9__INCLUDED_
 
 #include <vector>
-#include "../../DefStruct.h"
+#include "../../Common/DefStruct.h"
 
 using namespace std;
 

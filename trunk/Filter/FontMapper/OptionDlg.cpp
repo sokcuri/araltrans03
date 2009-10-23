@@ -4,7 +4,7 @@
 #include <tchar.h>
 #include <string>
 #include <map>
-#include "../../DefStruct.h"		// AralTrans 함수 및 구조체가 정의된 헤더 파일 Include
+#include "../../Common/DefStruct.h"		// AralTrans 함수 및 구조체가 정의된 헤더 파일 Include
 #include "FontMapper.h"
 #include "OptionDlg.h"
 #include "resource.h"
