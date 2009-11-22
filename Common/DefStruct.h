@@ -10,7 +10,7 @@ struct PLUGIN_INFO
 	int			nIconID;			// Icon Resource ID
 	wchar_t		wszPluginType[16];	// 플러그인 타입
 	wchar_t		wszPluginName[64];	// 플러그인 이름
-
+	wchar_t		wszDownloadUrl[256];// 플러그인 다운로드 URL
 };
 
 
