@@ -60,14 +60,16 @@ extern "C" __declspec(dllexport) BOOL __stdcall GetPluginInfo(PLUGIN_INFO* pPlug
 {
 	BOOL bRetVal = FALSE;
 
-	if(sizeof(PLUGIN_INFO) == pPluginInfo->cch)
+	if(sizeof(PLUGIN_INFO) <= pPluginInfo->cch)
 	{
 		// Set Plugin Icon ID
 		//pPluginInfo->nIconID = IDI_ICON2;
 		// Set Plugin Name
-		wcscpy_s(pPluginInfo->wszPluginName, sizeof(pPluginInfo->wszPluginName)/sizeof(wchar_t), L"Font Mapper");
+		wcscpy_s(pPluginInfo->wszPluginName, 64, L"Font Mapper");
 		// Set Plugin Type (Algorithm, Translator)
-		wcscpy_s(pPluginInfo->wszPluginType, sizeof(pPluginInfo->wszPluginType)/sizeof(wchar_t), L"Filter");
+		wcscpy_s(pPluginInfo->wszPluginType, 16, L"Filter");
+		// Set Download URL
+		wcscpy_s(pPluginInfo->wszDownloadUrl, 256, L"http://www.aralgood.com/update_files_AT3/Plugin/Filter/FontMapper.zip");
 
 		bRetVal = TRUE;
 	}
@@ -223,7 +225,7 @@ extern "C" __declspec(dllexport) BOOL __stdcall OnPluginClose()
 	g_sATCTNR3.procUnhookWin32Api( L"GDI32.DLL", L"TextOutA", NewTextOutA );
 	g_sATCTNR3.procUnhookWin32Api( L"GDI32.DLL", L"TextOutW", NewTextOutW );
 	g_sATCTNR3.procUnhookWin32Api( L"GDI32.DLL", L"ExtTextOutA", NewExtTextOutA );
-	//g_sATCTNR3.procUnhookWin32Api( L"GDI32.DLL", L"ExtTextOutW", NewExtTextOutW );
+	g_sATCTNR3.procUnhookWin32Api( L"GDI32.DLL", L"ExtTextOutW", NewExtTextOutW );
 	g_sATCTNR3.procUnhookWin32Api( L"USER32.DLL", L"DrawTextA", NewDrawTextA );
 	g_sATCTNR3.procUnhookWin32Api( L"USER32.DLL", L"DrawTextW", NewDrawTextW );
 	g_sATCTNR3.procUnhookWin32Api( L"USER32.DLL", L"DrawTextExA", NewDrawTextExA );

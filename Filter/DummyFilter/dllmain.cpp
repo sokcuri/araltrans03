@@ -55,7 +55,7 @@ extern "C" __declspec(dllexport) BOOL __stdcall GetPluginInfo(PLUGIN_INFO* pPlug
 {
 	BOOL bRetVal = FALSE;
 
-	if(sizeof(PLUGIN_INFO) == pPluginInfo->cch)
+	if(sizeof(PLUGIN_INFO) <= pPluginInfo->cch)
 	{
 		// Set Plugin Icon ID
 		pPluginInfo->nIconID = IDI_ICON2;
