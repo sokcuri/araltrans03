@@ -145,7 +145,7 @@ BOOL CATCodeMgr::Close()
 	if(m_hClipboardThread && m_hClipTextChangeEvent)
 	{
 		::SetEvent(m_hClipTextChangeEvent);
-		::WaitForSingleObject(m_hClipboardThread, 3000);
+		//::WaitForSingleObject(m_hClipboardThread, 3000);
 		::CloseHandle(m_hClipboardThread);
 		::CloseHandle(m_hClipTextChangeEvent);
 	}
