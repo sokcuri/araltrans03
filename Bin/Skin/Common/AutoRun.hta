@@ -1,0 +1,441 @@
+<HTML>
+<HEAD>
+	<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+	<script src="../Common/common.js" type="text/javascript"></script>
+	<TITLE>AralTrans 0.3 - Auto Run Utility</TITLE>
+	<HTA:APPLICATION ID="ATHTA_autorun" 
+		APPLICATIONNAME="AralTrans 0.3 AutoRun" 
+		BORDER="thin"
+		CAPTION="yes"
+		ICON="../../AralTrans.exe"
+		SHOWINTASKBAR="yes"
+		SINGLEINSTANCE="no"
+		SYSMENU="yes"
+		WINDOWSTATE="normal"
+		CONTEXTMENU="yes"
+		MAXIMIZEBUTTON="no"
+		MINIMIZEBUTTON="yes"
+		NAVIGABLE="no"
+		SCROLL="no"
+		SELECTION="no"
+		>
+
+<SCRIPT language="javascript">
+<!--
+
+window.resizeTo(400,400);
+
+var objAralTransApp = null;
+var strSettingFile = "";
+var xmlDoc = null;
+var elemSetting = null;
+var elemDataList = null;
+var elemPluginList = null;
+var elemContextList = null;
+
+// Parse command line and set to 'strSettingFile'
+var cmdLine = ATHTA_autorun.commandLine;
+if(cmdLine)
+{
+	var nStartIdx = cmdLine.toUpperCase().indexOf("AUTORUN.HTA") + 12;
+	if(cmdLine.charAt(nStartIdx) == ' ') nStartIdx++;
+	if(cmdLine.charAt(nStartIdx) == '\"') nStartIdx++;
+
+	var nCopyLen = cmdLine.length - nStartIdx;
+	if(cmdLine.charAt(cmdLine.length-1) == '\"') nCopyLen--;
+
+	strSettingFile = cmdLine.substr(nStartIdx, nCopyLen);
+
+	// Check the file name is correct
+	var fso = new ActiveXObject("Scripting.FileSystemObject");
+	if(fso.FileExists(strSettingFile) == false)
+	{
+		alert("Can not find the setting file!");
+		window.close();
+		strSettingFile = "";
+	}
+
+	// Create XML Object
+	xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+	xmlDoc.async = false;
+	xmlDoc.load(strSettingFile);
+	try
+	{
+		elemSetting = xmlDoc.getElementsByTagName("Setting")[0];
+	}
+	catch(ex)
+	{
+		elemSetting = null;
+	}
+
+	if(elemSetting == null)
+	{
+		alert("'" + strSettingFile + "' is not AralTrans setting file!");
+		window.close();
+		strSettingFile = "";
+	}
+}
+
+// Connect to AralTrans Application
+objAralTransApp = new ActiveXObject("AralTrans.Application");
+if(!objAralTransApp)
+{
+	alert("Can not create or connect to AralTrans object!");
+	window.close();
+}
+
+
+/////////////////////////////////////////////////////////
+// LoadSettingInfo()
+/////////////////////////////////////////////////////////
+function LoadSettingInfo()
+{
+	if(!strSettingFile || strSettingFile == "") return;
+
+	// Get mandatory elements
+	try
+	{
+		elemDataList = elemSetting.getElementsByTagName("DataList")[0];
+		elemPluginList = elemSetting.getElementsByTagName("PluginList")[0];
+		elemContextList = elemSetting.getElementsByTagName("ContextList")[0];
+	}
+	catch(ex){}
+
+	if( !elemSetting || !elemDataList || !elemPluginList || !elemContextList )
+	{
+		alert("The file is not AralTrans setting file!");
+		getObject("textXmlFilePathName").value = "";
+		window.close();
+		return;
+	}
+
+	// Show basic informations
+	getObject("textGUID").value = getChildElemText(elemSetting, "GUID");
+	getObject("textSettingAuthor").value = getChildElemText(elemSetting, "SettingAuthor"); elemSetting.getElementsByTagName("")[0].text;
+	getObject("textSettingName").value = getChildElemText(elemSetting, "SettingName"); elemSetting.getElementsByTagName("")[0].text;
+	getObject("textSettingDescription").value = getChildElemText(elemSetting, "SettingDescription");
+	getObject("textSettingThumbnailUrl").value = getChildElemText(elemSetting, "SettingThumbnailUrl"); 
+
+	getObject("textExecutionFileFolder").value = getChildElemText(elemSetting, "ExecutionFileFolder"); 
+	getObject("textExecutionFileName").value = getChildElemText(elemSetting, "ExecutionFileName"); 
+	getObject("textExecutionFileVersion").value = getChildElemText(elemSetting, "ExecutionFileVersion"); 
+	getObject("textExecutionFileHash").value = getChildElemText(elemSetting, "ExecutionFileHash"); 
+
+	getObject("textDelay").value = getChildElemText(elemSetting, "Delay"); 
+
+}
+
+/////////////////////////////////////////////////////////
+// autoRun()
+/////////////////////////////////////////////////////////
+function autoRun()
+{
+	var objATProcess = null;
+
+	// At first, try to find the same hash in current process list
+	var strHashToFind = getObject("textExecutionFileHash").value;	
+	objAralTransApp.RefreshProcessList();	// Invoke RefreshProcessList
+	var cnt = objAralTransApp.GetProcessCount();
+	for(var i=0; i<cnt; i++)
+	{
+		var objTmpProcess = objAralTransApp.GetProcess(i);
+		if(objTmpProcess.GetExecutionFileHash() == strHashToFind
+			&& !objTmpProcess.GetIsHooked())
+		{
+			// If found, ask to user whether use this process or not
+			if(confirm("AralTrans found the process '" + objTmpProcess.GetExecutionFileName() + "'.\r\nDo you want to hook this?") == 1)
+			{
+				// If user want to do, we set objATProcess to this process
+				objATProcess = objTmpProcess;
+			}
+			
+			break;
+		}
+	}
+	
+	// If objATProcess was not setted, we are now executing new process
+	if(!objATProcess)
+	{
+		// Try 1. Union of Specified Directory and File Name
+		var strFilePathName = getObject("textExecutionFileFolder").value + "\\" + getObject("textExecutionFileName").value;
+		if(objAralTransApp.GetFileHash(strFilePathName) == strHashToFind)
+		{
+			//alert("Found at try 1");
+		}		
+		else
+		{
+			// Try 2. Union Of Upper Directory And File Name
+			var nCharIdx;
+			var strUpperDir = strSettingFile;
+			nCharIdx = strUpperDir.lastIndexOf("\\");
+			if(nCharIdx > 0) strUpperDir = strUpperDir.substr(0, nCharIdx);
+			nCharIdx = strUpperDir.lastIndexOf("\\");
+			if(nCharIdx > 0) strUpperDir = strUpperDir.substr(0, nCharIdx);
+
+			strFilePathName = strUpperDir + "\\" + getObject("textExecutionFileName").value;
+			if(objAralTransApp.GetFileHash(strFilePathName) == strHashToFind)
+			{
+				//alert("Found at try 2");
+				getObject("textExecutionFileFolder").value = strUpperDir;
+			}		
+			else
+			{
+				// Try 3. Show File Dialog
+				while(true)
+				{
+					strFilePathName = objAralTransApp.ShowFileDialog(true, "Execution File (*.exe)|*.exe|All Files (*.*)|*.*||", "");
+					if(strFilePathName == "")
+					{
+						break;
+					}
+					else if(objAralTransApp.GetFileHash(strFilePathName) == strHashToFind)
+					{
+						//alert("Found at try 3");
+
+						nCharIdx = strFilePathName.lastIndexOf("\\");
+						getObject("textExecutionFileFolder").value = strFilePathName.substr(0, nCharIdx);
+						getObject("textExecutionFileName").value = strFilePathName.substr(nCharIdx+1);
+						break;
+					}
+					else
+					{
+						alert("The execution file hash mismatched!");						
+					}
+				}
+			}
+		}
+
+		if(!strFilePathName || strFilePathName.length == 0)
+		{
+			self.close();
+			return;
+		}
+	}
+
+	// Check the folder was same with the element value.
+	if(getObject("textExecutionFileFolder").value != getChildElemText(elemSetting, "ExecutionFileFolder"))
+	{
+		elemSetting.getElementsByTagName("ExecutionFileFolder")[0].text = getObject("textExecutionFileFolder").value;
+		xmlDoc.save(strSettingFile);
+	}
+
+	// Create temporary file for update
+	var fso = new ActiveXObject("Scripting.FileSystemObject");
+	var tfolder = fso.GetSpecialFolder(2);
+	var tname = fso.GetTempName();
+	tf = tfolder.CreateTextFile(tname);
+
+	// Check data & plugin files exist
+	var arrDownloadFiles = new Array();
+	var arrMissingFiles = new Array();
+	var strAppDir = getObject("textExecutionFileFolder").value;
+	try		
+	{
+		// Check data files
+		var elemcolData = elemDataList.getElementsByTagName("Data");
+		var dataCnt = elemcolData.length;
+		for(var i = 0; i < dataCnt; i++)
+		{
+			var elemData = elemcolData[i];
+			var strDataFilePathName = 
+				decodePath(getChildElemText(elemData, "DataFileFolder"), strAppDir) 
+				+ "\\" +  getChildElemText(elemData, "DataFileName");
+			
+			if(fso.FileExists(strDataFilePathName) == false)
+			{
+				var strDownloadUrl = getChildElemText(elemData, "DownloadUrl");
+				if(strDownloadUrl && strDownloadUrl.length > 0)
+				{
+					tf.WriteLine("[File" + arrDownloadFiles.length + "]");
+					tf.WriteLine("Location=" + strDataFilePathName);
+					tf.WriteLine("DownloadURL=" + strDownloadUrl);
+					tf.WriteBlankLines(1) ;
+					arrDownloadFiles[arrDownloadFiles.length] = strPluginFilePathName;
+				}
+				else
+				{
+					arrMissingFiles[arrMissingFiles.length] = strPluginFilePathName;					
+				}
+			}
+
+		} //for
+
+		// Check plugin files
+		var elemcolPlugin = elemPluginList.getElementsByTagName("Plugin");
+		var pluginCnt = elemcolPlugin.length;
+		for(var i = 0; i < pluginCnt; i++)
+		{
+			var elemPlugin = elemcolPlugin[i];
+			var strPluginFilePathName = 
+				decodePath(getChildElemText(elemPlugin, "PluginFileFolder"), strAppDir) 
+				+ "\\" +  getChildElemText(elemPlugin, "PluginFileName");
+			
+			if(fso.FileExists(strPluginFilePathName) == false)
+			{
+				var strDownloadUrl = getChildElemText(elemPlugin, "DownloadUrl");
+				if(strDownloadUrl && strDownloadUrl.length > 0)
+				{
+					tf.WriteLine("[File" + arrDownloadFiles.length + "]");
+					tf.WriteLine("Location=" + strPluginFilePathName);
+					tf.WriteLine("DownloadURL=" + strDownloadUrl);
+					tf.WriteBlankLines(1) ;
+					arrDownloadFiles[arrDownloadFiles.length] = strPluginFilePathName;
+				}
+				else
+				{
+					arrMissingFiles[arrMissingFiles.length] = strPluginFilePathName;					
+				}
+			}
+
+		} //for
+	
+	}
+	catch(ex)
+	{
+	}
+
+	// Close temporary file for update
+	tf.Close();
+	//alert(tfolder + "\\" + tname);
+
+	// Alert of Missing Files
+	if(arrMissingFiles.length > 0)
+	{
+		var strMissingMsg = "These files do not have download information.\r\n\r\n\r\n";
+		for(var i=0; i<arrMissingFiles.length; i++)
+		{
+			strMissingMsg += (arrMissingFiles[i] + "\r\n");
+		}
+
+		strMissingMsg += ("\r\n\r\nDo you want to continue?");
+
+		if(confirm(strMissingMsg) == 0)
+		{
+			fso.DeleteFile(tfolder + "\\" + tname);	
+			self.close();
+			return;
+		}
+	}
+
+	// Execute AralUpdater
+	if(arrDownloadFiles.length > 0)
+	{
+		var bFilesCompleted = false;
+		var strDownloadMsg = "You need to download below files.\r\n\r\n\r\n";
+		for(var i=0; i<arrDownloadFiles.length; i++)
+		{
+			strDownloadMsg += (arrDownloadFiles[i] + "\r\n");
+		}
+
+		strDownloadMsg += ("\r\n\r\nDo you want to download now?");
+
+		if(confirm(strDownloadMsg) == 1)
+		{
+			var objShell = new ActiveXObject("WScript.Shell");
+			var nRes = objShell.run(getAT3Dir() + "\\AralUpdater.exe execute " + tfolder + "\\" + tname, 1, true);
+			if(nRes != -1) bFilesCompleted = true;
+		}
+
+		if(bFilesCompleted == false && confirm("Download failed.\r\nDo you want to continue?") == 0)
+		{
+			fso.DeleteFile(tfolder + "\\" + tname);	
+			self.close();
+			return;				
+		}
+
+	}
+
+	fso.DeleteFile(tfolder + "\\" + tname);	
+
+	// Execute new process
+	if(!objATProcess && strFilePathName.length > 0)
+	{
+		objATProcess = objAralTransApp.NewProcess(strFilePathName, "", "");
+		if(!objATProcess)
+		{
+			alert("Failed to create new process!");
+			self.close();
+			return;				
+		}
+	}
+
+	// Delay
+	var nDelay = getObject("textDelay").value;
+	//alert("isNumeric(" + nDelay + ") : " + isNumeric(nDelay));
+	if(isNumeric(nDelay))
+	{
+		var nWidth = 150;
+		var nHeight = 200;
+		var nLeftPosition = (screen.width) ? (screen.width-nWidth)/2 : 0; 
+		var nTopPosition = (screen.height) ? (screen.height-nHeight)/2 : 0; 
+
+		window.showModalDialog("Delay.hta", nDelay, "dialogTop:" + nTopPosition + "px;dialogLeft:" + nLeftPosition + "px;dialogWidth:" + nWidth + "px;dialogHeight:" + nHeight + "px;");
+	}
+
+
+	// Hook it.
+	if(objATProcess.Hook() == false)
+	{
+		alert("Failed to hook the process!");
+		self.close();
+		return;
+	}
+
+	// Get AralTrans Container.
+	var objATContainer;
+	while(!objATContainer)
+	{
+		objATContainer = objATProcess.ATContainer;
+	}
+
+	// Apply plugin and context settings to this container.
+	if( applySetting(objATContainer, elemPluginList, elemContextList) != true )
+	{
+		objATContainer.Visible = true;
+	}
+
+	self.close();
+}
+
+//-->
+</SCRIPT>
+
+</HEAD>
+
+
+
+<BODY onload="LoadSettingInfo();">
+
+<!-- Start of layout table -->
+			GUID : <INPUT type="text" name="textGUID" value="">
+			<br>
+			작성자 : <INPUT type="text" name="textSettingAuthor" value="">
+			<br>
+			세팅 이름 : <INPUT type="text" name="textSettingName" value="">
+			<br>
+			세팅 설명 : <INPUT type="text" name="textSettingDescription" value="">
+			<br>
+			썸네일 이미지 URL : <INPUT type="text" name="textSettingThumbnailUrl" value="">
+			<br>
+
+			<hr>
+
+			실행파일 위치 : <INPUT type="text" name="textExecutionFileFolder" value="">
+			<br>
+			실행파일 이름 : <INPUT type="text" name="textExecutionFileName" value="">
+			<br>
+			실행파일 버전 : <INPUT type="text" name="textExecutionFileVersion" value="">
+			<br>
+			실행파일 해시 : <INPUT type="text" name="textExecutionFileHash" value="">
+			<br>
+
+			<hr>
+
+			대기시간 : <INPUT type="text" name="textDelay" value="">
+			<br>
+
+			<INPUT type="button" name="btnRun" value="Run" onClick="autoRun();">
+<!-- End of layout table -->
+
+</BODY>
+</HTML>
