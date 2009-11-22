@@ -60,14 +60,16 @@ extern "C" __declspec(dllexport) BOOL __stdcall GetPluginInfo(PLUGIN_INFO* pPlug
 {
 	BOOL bRetVal = FALSE;
 
-	if(sizeof(PLUGIN_INFO) == pPluginInfo->cch)
+	if(sizeof(PLUGIN_INFO) <= pPluginInfo->cch)
 	{
 		// Set Plugin Icon ID
 		pPluginInfo->nIconID = IDI_ICON1;
 		// Set Plugin Name
-		wcscpy_s(pPluginInfo->wszPluginName, sizeof(pPluginInfo->wszPluginName)/sizeof(wchar_t), L"ezTrans XP");
+		wcscpy_s(pPluginInfo->wszPluginName, 64, L"ezTrans XP");
 		// Set Plugin Type (Algorithm, Filter, Translator)
-		wcscpy_s(pPluginInfo->wszPluginType, sizeof(pPluginInfo->wszPluginType)/sizeof(wchar_t), L"Translator");
+		wcscpy_s(pPluginInfo->wszPluginType, 16, L"Translator");
+		// Set Download URL
+		wcscpy_s(pPluginInfo->wszDownloadUrl, 256, L"http://www.aralgood.com/update_files_AT3/Plugin/Translator/ezTransXP.zip");
 
 		bRetVal = TRUE;
 	}
