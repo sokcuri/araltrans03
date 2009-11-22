@@ -1,0 +1,364 @@
+<HTML>
+<HEAD>
+	<TITLE>AralTrans 0.3</TITLE>
+	<HTA:APPLICATION ID="ATHTA_main" 
+		APPLICATIONNAME="AralTrans 0.3" 
+		BORDER="thin"
+		CAPTION="yes"
+		ICON="../../AralTrans.exe"
+		SHOWINTASKBAR="yes"
+		SINGLEINSTANCE="yes"
+		SYSMENU="yes"
+		WINDOWSTATE="normal"
+		CONTEXTMENU="yes"
+		MAXIMIZEBUTTON="no"
+		MINIMIZEBUTTON="yes"
+		NAVIGABLE="no"
+		SCROLL="no"
+		SELECTION="no"
+		>
+	<meta http-equiv="Content-Type" content="text/html">
+	<meta http-equiv="Cache-Control" content="No-Cache">
+	<meta http-equiv="Pragma" content="No-Cache">
+	<meta http-equiv="expires" content="now">
+	<meta http-equiv="MSThemeCompatible" content="Yes">
+	<link rel="stylesheet" href="../Common/common.css" type="text/css">
+	<script src="../Common/common.js" type="text/javascript"></script>
+<SCRIPT language="javascript">
+<!--
+
+window.resizeTo(480,415);
+
+var objAralTransApp = new ActiveXObject("AralTrans.Application");
+
+function onChangeListProcess()
+{
+	var objProcess = null;
+	var objATContainer = null;
+	var nPrevPID = getObject("lblProcessID").innerText;
+
+	var listProcess = getObject("listProcess");
+	var i = listProcess.selectedIndex;
+	if(i >= 0)
+	{
+		objProcess = objAralTransApp.GetProcess(listProcess.options[i].value);
+		objATContainer = objProcess.ATContainer;
+	}
+
+	// Hooking Information
+	if(objProcess)
+	{
+		getObject("lblProcessID").innerText = objProcess.GetProcessID();
+		
+		if(objATContainer)
+		{
+			getObject("trPluginCount").style.display = "block";
+			getObject("trContextCount").style.display = "block";
+			getObject("trLocaleProgram").style.display = "block";
+			getObject("trLocaleOption").style.display = "block";
+
+			getObject("btnHook").style.display = "none";
+			getObject("btnUnhook").style.display = "inline";
+			getObject("btnSetting").style.display = "inline";
+			getObject("btnSetting").disabled = objATContainer.Visible;
+			getObject("btnSave").style.display = "inline";
+
+			getObject("lblStatus").innerHTML = "<font color='red'>Hooked</font>";
+			getObject("lblPluginCount").innerHTML = objATContainer.GetPluginCount();
+			getObject("lblContextCount").innerHTML = objATContainer.GetContextCount();
+			getObject("lblLocaleProgram").innerHTML = "";
+			getObject("lblLocaleOption").innerHTML = "";
+
+		}
+		else
+		{
+			getObject("trPluginCount").style.display = "none";
+			getObject("trContextCount").style.display = "none";
+			getObject("trLocaleProgram").style.display = "none";
+			getObject("trLocaleOption").style.display = "none";
+
+			getObject("btnHook").style.display = "inline";
+			getObject("btnHook").disabled = false;
+			getObject("btnUnhook").style.display = "none";
+			getObject("btnSetting").style.display = "none";
+			getObject("btnSave").style.display = "none";
+
+			getObject("lblStatus").innerText = "Unhooked";
+		}
+	}
+	else
+	{		
+		getObject("trPluginCount").style.display = "none";
+		getObject("trContextCount").style.display = "none";
+		getObject("trLocaleProgram").style.display = "none";
+		getObject("trLocaleOption").style.display = "none";
+
+		getObject("btnHook").style.display = "block";
+		getObject("btnHook").disabled = true;
+		getObject("btnUnhook").style.display = "none";
+		getObject("btnSetting").style.display = "none";
+		getObject("btnSave").style.display = "none";
+
+		getObject("lblProcessID").innerText = "";
+		getObject("lblStatus").innerText = "";
+	}
+
+
+	// EXE File Information
+	if(nPrevPID != getObject("lblProcessID").innerText)
+	{
+		if(objProcess)
+		{
+			getObject("textExeFileVersion").value = objProcess.GetExecutionFileVersion();
+			getObject("textExeFilePath").value = objProcess.GetExecutionFileFolder() + "\\" + objProcess.GetExecutionFileName();
+			getObject("textExeFileHash").value = objProcess.GetExecutionFileHash();
+		}
+		else
+		{
+			getObject("textExeFileVersion").value = "";
+			getObject("textExeFilePath").value = "";
+			getObject("textExeFileHash").value = "";
+		}
+	}
+}
+
+function Refresh()
+{
+	//var listProcess = document.all.listProcess;
+	var listProcess = getObject("listProcess");
+
+	// Invoke RefreshProcessList
+	objAralTransApp.RefreshProcessList();
+	
+	// Check the process list was changed
+	var bListChanged = false;
+	var cnt = objAralTransApp.GetProcessCount();
+	if(listProcess.options.length != cnt)
+	{
+		bListChanged = true;
+	}
+	else
+	{
+		for(var i=0; i<cnt; i++)
+		{
+			var strAralProcName = objAralTransApp.GetProcess(i).GetExecutionFileName();
+			var strListProcName = listProcess.options[i].text;
+
+			if(strAralProcName != strListProcName)
+			{
+				bListChanged = true;
+				break;
+			}
+
+			// check hooking
+			if(objAralTransApp.GetProcess(i).GetIsHooked())
+				listProcess.options[i].style.color = "red";
+			else
+				listProcess.options[i].style.color = "black";
+		
+		}
+	}	
+
+	// Update process count
+	getObject("lblProcessCount").innerText = cnt;
+	
+	// If process list was changed
+	if(bListChanged)
+	{
+		// Save the current selected process ID
+		var nPrevSelPID = 0;
+		var i = listProcess.selectedIndex
+		if(i >= 0)
+		{
+			var objCurProcess = objAralTransApp.GetProcess(listProcess.options[i].value);
+			if(objCurProcess)
+			{
+				nPrevSelPID = objCurProcess.GetProcessID();
+			}
+		}
+
+		// Clear Process List
+		listProcess.options.length = 0;
+
+		// Fill Process List
+		for(var i=0; i<cnt; i++)
+		{
+			var objProcess = objAralTransApp.GetProcess(i);
+			var objListItem = new Option();
+			objListItem.text = objProcess.GetExecutionFileName();
+			objListItem.value = i;
+			if(objProcess.GetIsHooked())
+				objListItem.style.color = "red";
+			else
+				objListItem.style.color = "black";
+
+			listProcess.options.add(objListItem);
+			if(objProcess.GetProcessID() == nPrevSelPID)
+			{
+				listProcess.selectedIndex = i;
+			}
+		}
+	}	
+
+	onChangeListProcess();
+}
+
+function AutoRefresh()
+{
+	Refresh();
+	setTimeout("AutoRefresh();", 1000);
+}
+
+
+function Hook()
+{
+	var listProcess = getObject("listProcess");
+	var i = listProcess.options[listProcess.selectedIndex].value;
+	var objProcess = objAralTransApp.GetProcess(i);
+
+	if(objProcess.Hook())
+	{
+		var objATContainer;
+		while(!objATContainer)
+		{
+			objATContainer = objProcess.ATContainer;
+		}
+		objATContainer.Visible = true;
+		listProcess.options[listProcess.selectedIndex].style.color = "red";
+	}
+
+	onChangeListProcess();
+}
+
+function Unhook()
+{
+	var listProcess = getObject("listProcess");
+	var i = listProcess.options[listProcess.selectedIndex].value;
+	var objProcess = objAralTransApp.GetProcess(i);
+
+	if(objProcess.Unhook())
+	{
+		listProcess.options[listProcess.selectedIndex].style.color = "black";
+	}
+
+	onChangeListProcess();
+}
+
+function SaveSetting()
+{
+	var listProcess = getObject("listProcess");
+	if(listProcess.selectedIndex != -1)
+	{
+		var i = listProcess.options[listProcess.selectedIndex].value;
+		var objProcess = objAralTransApp.GetProcess(i);
+
+		//window.open("save_setting.hta");
+		if(objProcess && objProcess.GetIsHooked())
+		{
+			window.showModalDialog("save_setting.hta", objProcess, "dialogWidth:500px;dialogHeight:500px;");
+		}
+	}
+}
+
+function ShowContainer()
+{
+	var listProcess = getObject("listProcess");
+	var i = listProcess.options[listProcess.selectedIndex].value;
+	var objProcess = objAralTransApp.GetProcess(i);
+	var objContainer = objProcess.ATContainer;	
+	objContainer.Visible = true;
+}
+
+//-->
+</SCRIPT>
+
+</HEAD>
+
+
+
+<BODY style="padding:0 0 0 0; margin:0 0 0 0;" onload="AutoRefresh();" background="img/bg_main.jpg">
+<!-- leftmargin="0" topmargin="0" -->
+
+<!-- Start of layout table -->
+<!--table width="470" border="1" bordercolor="#FF0000" style='border-collapse:collapse;border:1px solid #AAAAAA;'-->
+<table width="470" border="0" cellpadding="0" cellspacing="0">
+	<tr height="50">
+		<td colspan=2>&nbsp;</td>
+	</tr>
+	<tr height="215">
+		<td width="240" align="right" valign="top">
+		<!-- Start of Process List -->
+
+			<label id="lblProcessCount" style="width:55px;height:15px;color:white;margin-top:5px;margin-right:16px;padding-right:7px;background-image:url(img/btn_total.gif);background-repeat:no-repeat;background-position-x:right;background-position-y:center;">0</label>
+
+			<SELECT SIZE=3 name="listProcess" onchange="onChangeListProcess();" style="width=209;height=180; margin-top:3px;margin-right:14px">
+			</SELECT>
+
+		<!-- End of Process List -->
+		</td>
+		<td width="230" align="left" valign="top">
+		<!-- Start of Hooking Information -->
+
+			<table width="200" border="1" bordercolor="#AAAAAA" style='border-collapse:collapse;border:1px solid #AAAAAA;margin-top:28px;margin-left:12px;margin-bottom:3px;'>
+				<tr>
+					<td width="100" class="head3">Process ID</td>
+					<td width="100" class="white"><label id="lblProcessID"></label></td>
+				</tr>
+				<tr>
+					<td width="100" class="head3">Status</td>
+					<td width="100" class="white"><label id="lblStatus"></label></td>
+				</tr>
+				<tr id="trPluginCount">
+					<td width="100" class="head3">Plugin Count</td>
+					<td width="100" class="white"><label id="lblPluginCount"></label></td>
+				</tr>
+				<tr id="trContextCount">
+					<td width="100" class="head3">Context Count</td>
+					<td width="100" class="white"><label id="lblContextCount"></label></td>
+				</tr>
+				<tr id="trLocaleProgram">
+					<td width="100" class="head3">Locale Program</td>
+					<td width="100" class="white"><label id="lblLocaleProgram"></label></td>
+				</tr>
+				<tr id="trLocaleOption">
+					<td width="100" class="head3">Locale Option</td>
+					<td width="100" class="white"><label id="lblLocaleOption"></label></td>
+				</tr>
+			</table>
+			<INPUT type="button" name="btnHook" value="Hook" onClick="Hook();" style="margin-left:12px;width:70px;font-weight:bold" class="button1">
+			<INPUT type="button" name="btnUnhook" value="Unhook" onClick="Unhook();" style="margin-left:12px;width:70px;font-weight:bold" class="button1">
+			<INPUT type="button" name="btnSetting" value="Setting" onClick="ShowContainer();">
+			<INPUT type="button" name="btnSave" value="Save" onClick="SaveSetting();">
+			<br>
+			<!--INPUT type="button" name="btnTest1" value="Test1" onClick="Test1();"-->
+
+		<!-- End of Hooking Information -->
+		</td>
+	</tr>
+	<tr height="110">
+		<td colspan=2 align="left" valign="top">
+		<!-- Start of Process Information -->
+
+			<table width="435" height="40" border="1" bordercolor="#AAAAAA" style='border-collapse:collapse;border:1px solid #AAAAAA;margin-top:27px;margin-left:18px;'>
+				<tr>
+					<td width="95" class="head1">Version</td>
+					<td width="340" class="white"><input type="text" class="input2" id="textExeFileVersion" readonly style="width:150px;"></label></td>
+				</tr>
+				<tr>
+					<td width="95" class="head1">EXE File Path</td>
+					<td width="340" class="white"><input type="text" class="input2" id="textExeFilePath" readonly style="width:330px;"></label></td>
+				</tr>
+				<tr>
+					<td width="95" class="head1">SHA-1 Hash</td>
+					<td width="340" class="white"><input type="text" class="input2" id="textExeFileHash" readonly style="width:330px;"></label></td>
+				</tr>
+			</table>
+
+		<!-- End of Process Information -->
+		</td>
+	</tr>
+</table>
+<!-- End of layout table -->
+
+</BODY>
+</HTML>

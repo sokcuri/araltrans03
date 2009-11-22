@@ -1,0 +1,62 @@
+<HTML>
+<HEAD>
+	<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+	<script src="../Common/common.js" type="text/javascript"></script>
+	<TITLE>Waiting...</TITLE>
+	<HTA:APPLICATION ID="ATHTA_delay" 
+		APPLICATIONNAME="AralTrans 0.3 Delay" 
+		BORDER="thin"
+		CAPTION="yes"
+		ICON="../../AralTrans.exe"
+		SHOWINTASKBAR="no"
+		SINGLEINSTANCE="no"
+		SYSMENU="yes"
+		WINDOWSTATE="normal"
+		CONTEXTMENU="yes"
+		MAXIMIZEBUTTON="no"
+		MINIMIZEBUTTON="no"
+		NAVIGABLE="no"
+		SCROLL="no"
+		SELECTION="no"
+		>
+
+<SCRIPT language="javascript">
+<!--
+
+window.resizeTo(160, 240);
+
+var nDelay = 5; //window.dialogArguments;
+
+function countDown()
+{
+	if(nDelay <= 0)
+	{
+		self.close();
+		return;
+	}
+
+	getObject("lblRemainingTime").innerHTML = "Count : " + nDelay + " sec";
+	setTimeout("countDown();", 1000);
+	nDelay -= 1;
+}
+
+//-->
+</SCRIPT>
+
+</HEAD>
+
+
+
+<BODY leftmargin=0 topmargin=0 onload="countDown();">
+
+<!-- Start of layout table -->
+<center>
+	<img src="waiting.gif">
+	<span id="lblRemainingTime"></span>
+	<br>
+	<input type="button" name="btnClose" value="Stop waiting" onClick="self.close();">
+</center>
+<!-- End of layout table -->
+
+</BODY>
+</HTML>
