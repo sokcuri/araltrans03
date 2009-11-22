@@ -52,7 +52,7 @@ extern "C" __declspec(dllexport) BOOL __stdcall GetPluginInfo(PLUGIN_INFO* pPlug
 {
 	BOOL bRetVal = FALSE;
 
-	if(sizeof(PLUGIN_INFO) == pPluginInfo->cch)
+	if(sizeof(PLUGIN_INFO) <= pPluginInfo->cch)
 	{
 		// Set Plugin Name
 		wcscpy_s(pPluginInfo->wszPluginName, sizeof(pPluginInfo->wszPluginName)/sizeof(wchar_t), L"Dummy Algorithm");

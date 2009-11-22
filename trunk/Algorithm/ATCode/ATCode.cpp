@@ -17,10 +17,11 @@ extern "C" __declspec(dllexport) BOOL __stdcall GetPluginInfo(PLUGIN_INFO* pPlug
 {
 	BOOL bRetVal = FALSE;
 
-	if(pPluginInfo && pPluginInfo->cch == sizeof(PLUGIN_INFO))
+	if(pPluginInfo && pPluginInfo->cch >= sizeof(PLUGIN_INFO))
 	{
-		wcscpy_s(pPluginInfo->wszPluginName, 64, _T("AT Code for AralTrans 0.3"));
-		wcscpy_s(pPluginInfo->wszPluginType, 16, _T("Algorithm"));
+		wcscpy_s(pPluginInfo->wszPluginName, 64, L"AT Code for AralTrans 0.3");
+		wcscpy_s(pPluginInfo->wszPluginType, 16, L"Algorithm");
+		wcscpy_s(pPluginInfo->wszDownloadUrl, 256, L"http://www.aralgood.com/update_files_AT3/Plugin/Algorithm/ATCode.zip");
 		bRetVal = TRUE;
 	}
 	return bRetVal;
