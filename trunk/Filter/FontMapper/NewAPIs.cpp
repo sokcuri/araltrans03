@@ -459,7 +459,7 @@ BOOL __stdcall NewExtTextOutW(
 	HFONT hOrigFont = NULL;
 
 	// 폰트 검사
-	if(g_sMainOption.nFontLoadLevel >= 5)
+	if(g_sMainOption.nFontLoadLevel >= 15)
 	{
 		hOrigFont = CheckFont(hdc);
 	}

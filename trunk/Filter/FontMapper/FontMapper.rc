@@ -73,7 +73,7 @@ BEGIN
     CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,45,89,84,20
     LTEXT           "Weakly",IDC_STATIC,20,92,24,8
     LTEXT           "Forcibly",IDC_STATIC,134,92,26,8
-    CTEXT           "Apply the font to text functions.",IDC_FONT_DESC,7,108,160,11
+    CTEXT           "Apply the font to text functions.",IDC_FONT_DESC,11,108,160,11
 END
 
 
