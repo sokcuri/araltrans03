@@ -168,14 +168,14 @@ CString CHookPoint::GetHookAddressString()
 // 새로운 번역 명령을 생성합니다.
 //
 //////////////////////////////////////////////////////////////////////////
-CTransCommand* CHookPoint::AddTransCmd(CString strArgScript)
+CTransCommand* CHookPoint::AddTransCmd(CString strArgScript, CString strContextName)
 {
 	strArgScript.Remove(_T(' '));
 	CTransCommand* pCmd = FindTransCmd(strArgScript);
 	
 	if(pCmd == NULL)
 	{
-		CString strContextName = GetHookAddressString() + _T("(") + strArgScript + _T(")");
+		//strContextName = GetHookAddressString() + _T("(") + strArgScript + _T(")");
 		if( CATCodeMgr::GetInstance()->m_sContainerFunc.procCreateTransCtx(strContextName) == TRUE )
 		{
 			//pCmd = new CTransCommand();

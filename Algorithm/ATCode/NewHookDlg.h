@@ -7,7 +7,8 @@
 class CNewHookDlg : public CDialog
 {
 	DECLARE_DYNAMIC(CNewHookDlg)
-
+	MODULEENTRY32 m_me32[200];
+	int m_nModCnt;
 public:
 	CNewHookDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CNewHookDlg();

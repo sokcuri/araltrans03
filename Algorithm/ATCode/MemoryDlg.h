@@ -32,4 +32,5 @@ public:
 	afx_msg void OnBnClickedCheck1();
 	afx_msg void OnBnClickedOk();
 	CString m_strCustomMem;
+	CString m_strMemName;
 };

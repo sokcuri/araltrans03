@@ -102,7 +102,7 @@ public:
 	UINT_PTR		GetHookAddress();
 	CString			GetHookAddressString();
 	
-	CTransCommand*	AddTransCmd(CString strArgScript);
+	CTransCommand*	AddTransCmd(CString strArgScript, CString strContextName);
 	CTransCommand*	FindTransCmd(CString strArgScript);
 
 	int				GetTransCmdCount();	
