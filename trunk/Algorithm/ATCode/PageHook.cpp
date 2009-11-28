@@ -41,6 +41,7 @@ void CPageHook::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BTN_ARG_DEL, m_btnDelArg);
 	DDX_Radio(pDX, IDC_RADIO_NOP, m_iTransMethod);
 	DDX_Control(pDX, IDC_CHK_IGNORE, m_chkIgnore);
+	DDX_Control(pDX, IDC_EDIT_TRANS_ARG, m_editTransArg);
 }
 
 
@@ -115,11 +116,15 @@ BOOL CPageHook::InitFromHookNode( COptionNode* pHookNode )
 			// 번역 명령
 			if(strCmdValue.CompareNoCase(_T("TRANS"))==0)
 			{
-				// 인자 거리
+				// 인자 주소
 				COptionNode* pDistNode = pCmdNode->GetChild(0);
 				if(pDistNode==NULL) throw -4;
 
-				CString strStorage = pDistNode->GetValue().MakeUpper();
+				// 메모리 별칭
+				COptionNode* pNameNode = pCmdNode->GetChild(1);
+				if(pNameNode==NULL) throw -4;
+
+				CString strStorage = pNameNode->GetValue(); // pDistNode->GetValue().MakeUpper();
 				int nComboIdx = m_comboTransArgs.AddString(strStorage);
 				m_comboTransArgs.SetItemData(nComboIdx, (DWORD_PTR)pCmdNode);
 
@@ -174,6 +179,7 @@ void CPageHook::ClearCtrlValues()
 	m_chkAllSameText.SetCheck(0);
 	m_chkClipKor.SetCheck(0);
 	m_chkClipJpn.SetCheck(0);
+	m_editTransArg.SetWindowText(_T(""));
 	
 	UpdateData(FALSE);
 
@@ -196,10 +202,13 @@ void CPageHook::OnCbnSelchangeComboTransArgs()
 
 	if(pTransCmdNode)
 	{
-
 		// 번역 옵션들 수집
 		int cnt3 = pTransCmdNode->GetChildCount();
-		for(int k=1; k<cnt3; k++)
+		if(cnt3 < 2) return;
+
+		m_editTransArg.SetWindowText(pTransCmdNode->GetChild(0)->GetValue());
+
+		for(int k=2; k<cnt3; k++)
 		{
 			COptionNode* pNode3 = pTransCmdNode->GetChild(k);
 			CString strTransOption = pNode3->GetValue().MakeUpper();
@@ -408,8 +417,9 @@ void CPageHook::OnBnClickedBtnArgAdd()
 	{
 		try
 		{
-			 if( NULL == m_pHookNode ) throw -1;
+			if( NULL == m_pHookNode ) throw -1;
 			
+			CString strMemName = _T("");
 			CString strMem = _T("");
 
 			if(memdlg.m_bCustom)
@@ -422,11 +432,19 @@ void CPageHook::OnBnClickedBtnArgAdd()
 			}
 			strMem.Remove(_T(' '));
 
+
 			// 인자 유효성 검사
 			if(strMem.IsEmpty())
 			{
 				this->MessageBox(_T("번역할 메모리를 선택해 주십시오."), _T("경고"));
 				throw -4;
+			}
+			// 별칭 검사
+			strMemName = memdlg.m_strMemName.Trim();
+			if(strMemName.IsEmpty())
+			{
+				this->MessageBox(_T("메모리 별칭을 지정해주세요."), _T("경고"));
+				throw -5;
 			}
 
 			// TRANS 노드 생성
@@ -438,6 +456,11 @@ void CPageHook::OnBnClickedBtnArgAdd()
 			COptionNode* pMemNode = pNode->CreateChild();
 			if(NULL == pMemNode) throw -3;
 			pMemNode->SetValue(strMem);
+
+			// 별칭 지정
+			COptionNode* pNameNode = pNode->CreateChild();
+			if(NULL == pNameNode) throw -3;
+			pNameNode->SetValue(strMemName);
 
 			// UI 갱신
 			if( InitFromHookNode(m_pHookNode) )

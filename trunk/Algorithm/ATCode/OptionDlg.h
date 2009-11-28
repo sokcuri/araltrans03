@@ -21,10 +21,10 @@ private:
 
 	int InitMainPage(COptionNode* pRootNode);
 	int AddHookPage(COptionNode* pHookNode);
-	CString FormatAddress(LPCTSTR cszAddr);
 
 public:
 	static COptionDlg* _Inst;
+	static CString FormatAddress(LPCTSTR cszAddr);
 	
 	COptionDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~COptionDlg();

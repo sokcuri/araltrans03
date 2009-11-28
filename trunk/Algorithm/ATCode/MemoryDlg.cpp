@@ -15,6 +15,7 @@ CMemoryDlg::CMemoryDlg(CWnd* pParent /*=NULL*/)
 	, m_strSelectedArg(_T(""))
 	, m_bCustom(FALSE)
 	, m_strCustomMem(_T(""))
+	, m_strMemName(_T(""))
 {
 
 }
@@ -32,6 +33,7 @@ void CMemoryDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT1, m_editCustomArg);
 	DDX_Control(pDX, IDC_STATIC_CUSTOM, m_staticCustom);
 	DDX_Text(pDX, IDC_EDIT1, m_strCustomMem);
+	DDX_Text(pDX, IDC_EDIT2, m_strMemName);
 }
 
 
@@ -93,6 +95,6 @@ void CMemoryDlg::OnBnClickedCheck1()
 
 void CMemoryDlg::OnBnClickedOk()
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	UpdateData();
 	OnOK();
 }

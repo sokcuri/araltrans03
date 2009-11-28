@@ -453,38 +453,19 @@ BOOL CATCodeMgr::HookFromOptionNode(COptionNode* pNode)
 			// 번역 명령
 			if(strHookValue.CompareNoCase(_T("TRANS"))==0)
 			{
-				// 인자 거리
-				COptionNode* pDistNode = pNode2->GetChild(0);
-				if(pDistNode==NULL) continue;
+				int cnt3 = pNode2->GetChildCount();
+				if(cnt3 < 2)  continue;
 
-				/*
-				int nDistFromESP = 0;
-				CString strStorage = pDistNode->GetValue().MakeUpper();
+				// 인자
+				//COptionNode* pDistNode = pNode2->GetChild(0);
+				//if(pDistNode==NULL)
+				CString strArgScript	= pNode2->GetChild(0)->GetValue();
+				CString strContextName	= pNode2->GetChild(1)->GetValue();
 
-				if(strStorage==_T("[ESP]")) nDistFromESP = 0x0;
-				else if(strStorage==_T("EAX")) nDistFromESP = -0x4;
-				else if(strStorage==_T("ECX")) nDistFromESP = -0x8;
-				else if(strStorage==_T("EDX")) nDistFromESP = -0xC;
-				else if(strStorage==_T("EBX")) nDistFromESP = -0x10;
-				else if(strStorage==_T("ESP")) nDistFromESP = -0x14;
-				else if(strStorage==_T("EBP")) nDistFromESP = -0x18;
-				else if(strStorage==_T("ESI")) nDistFromESP = -0x1C;
-				else if(strStorage==_T("EDI")) nDistFromESP = -0x20;
-				else
-				{
-
-					_stscanf((LPCTSTR)strStorage, _T("[ESP+%x]"), &nDistFromESP);
-					if(nDistFromESP == 0) continue;
-				}
-
-				CTransCommand* pTransCmd = pHookPoint->AddTransCmd(nDistFromESP);
-				*/
-
-				CTransCommand* pTransCmd = pHookPoint->AddTransCmd(pDistNode->GetValue());
+				CTransCommand* pTransCmd = pHookPoint->AddTransCmd(strArgScript, strContextName);
 				
 				// 번역 옵션들 수집
-				int cnt3 = pNode2->GetChildCount();
-				for(int k=1; k<cnt3; k++)
+				for(int k=2; k<cnt3; k++)
 				{
 					COptionNode* pNode3 = pNode2->GetChild(k);
 					CString strTransOption = pNode3->GetValue().MakeUpper();

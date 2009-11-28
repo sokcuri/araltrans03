@@ -49,4 +49,5 @@ public:
 	afx_msg void OnBnClickedRadio();
 	afx_msg void OnBnClickedChkIgnore();
 
+	CEdit m_editTransArg;
 };

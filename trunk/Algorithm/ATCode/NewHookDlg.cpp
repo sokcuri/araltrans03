@@ -5,6 +5,7 @@
 #include "ATCode.h"
 #include "ATCodeMgr.h"
 #include "NewHookDlg.h"
+#include "OptionDlg.h"
 
 
 // CNewHookDlg dialog
@@ -14,6 +15,7 @@ IMPLEMENT_DYNAMIC(CNewHookDlg, CDialog)
 CNewHookDlg::CNewHookDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CNewHookDlg::IDD, pParent)
 	, m_strHookAddr(_T(""))
+	, m_nModCnt(0)
 {
 
 }
@@ -41,17 +43,17 @@ BOOL CNewHookDlg::OnInitDialog()
 {
 	BOOL bRetVal = CDialog::OnInitDialog();
 
-	MODULEENTRY32 me32[200];
-	int nModCnt = CATCodeMgr::GetAllLoadedModules(me32, 200);
+	ZeroMemory(m_me32, sizeof(MODULEENTRY32) * 200);
+	m_nModCnt = CATCodeMgr::GetAllLoadedModules(m_me32, 200);
 
 	int nIdx = m_comboMods.AddString(_T("[Absolute]"));
 	if(nIdx != CB_ERR) m_comboMods.SetItemData(nIdx, NULL);
 	m_comboMods.SetCurSel(0);
 
-	for(int i=0; i<nModCnt; i++)
+	for(int i=0; i<m_nModCnt; i++)
 	{
-		nIdx = m_comboMods.AddString(me32[i].szModule);
-		if(nIdx != CB_ERR) m_comboMods.SetItemData(nIdx, (DWORD_PTR)me32[i].hModule);
+		nIdx = m_comboMods.AddString(m_me32[i].szModule);
+		if(nIdx != CB_ERR) m_comboMods.SetItemData(nIdx, (DWORD_PTR)m_me32[i].hModule);
 	}
 
 	return bRetVal;
@@ -62,14 +64,47 @@ void CNewHookDlg::OnBnClickedOk()
 
 	m_hModule = (HMODULE)m_comboMods.GetItemData(nCurSel);
 
+	UpdateData();
+
 	if(NULL == m_hModule)
 	{
-		m_strModuleName = _T("");
+		m_strHookAddr = COptionDlg::FormatAddress(m_strHookAddr);
+		if(!m_strHookAddr.IsEmpty())
+		{
+			m_strModuleName = _T("");
+			UINT_PTR pCodePoint = NULL;
+			_stscanf(m_strHookAddr, _T("%x"), &pCodePoint);
+
+			for(int i=0; i<m_nModCnt; i++)
+			{
+
+				if((UINT_PTR)m_me32[i].modBaseAddr <= pCodePoint 
+					&& pCodePoint <= (UINT_PTR)m_me32[i].modBaseAddr + (UINT_PTR)m_me32[i].modBaseSize )
+				{
+					pCodePoint -= (UINT_PTR)m_me32[i].hModule;
+					m_strModuleName = m_me32[i].szModule;
+					m_strHookAddr.Format(_T("%x"), pCodePoint);
+					m_hModule = m_me32[i].hModule;
+					break;
+				}
+			}
+
+			if(m_strModuleName.IsEmpty() && 0x00400000 < pCodePoint && pCodePoint < 0x01000000)
+			{
+				pCodePoint -= 0x00400000;
+				m_strModuleName = m_me32[0].szModule;
+				m_strHookAddr.Format(_T("%x"), pCodePoint);
+				m_hModule = m_me32[0].hModule;
+			}
+
+		}
 	}
 	else
 	{
 		m_comboMods.GetLBText(nCurSel, m_strModuleName);
 	}
+
+	UpdateData(FALSE);
 
 	OnOK();
 }
