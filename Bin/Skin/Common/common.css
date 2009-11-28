@@ -26,11 +26,13 @@
 		COLOR: #333333;
 		/* HEIGHT: 38px;*/
 		PADDING-LEFT: 5px;
+		PADDING-RIGHT: 5px;
 		BACKGROUND-COLOR: #FFFFFF;
 		VERTICAL-ALIGN: middle;
 	}
 	TD.head1
 	{
+		/* Green */
 		COLOR: #333333;
 		/* HEIGHT: 38px;*/
 		/* BACKGROUND-COLOR: #F7FFEE; */
@@ -41,14 +43,17 @@
 	}
 	TD.head2
 	{
+		/* Gray */
 		COLOR: #333333;
 		/* HEIGHT: 28px;*/
+		PADDING-LEFT: 5px;
 		FONT-WEIGHT: bold;
-		BACKGROUND-COLOR: #F0FCE9;
+		BACKGROUND-COLOR: #F0F0F0;
 		VERTICAL-ALIGN: middle;
 	}
 	TD.head3
 	{
+		/* Red */
 		COLOR: #333333;
 		/* HEIGHT: 30px;*/
 		PADDING-LEFT: 5px;
@@ -380,6 +385,18 @@
 	.board
 	{
 		COLOR: #ffffff
+	}
+	.readonly
+	{
+		BORDER-RIGHT: #aaaaaa 1px solid;
+		BORDER-TOP: #aaaaaa 1px solid;
+		FONT-SIZE: 11px;
+		BORDER-LEFT: #aaaaaa 1px solid;
+		BORDER-BOTTOM: #aaaaaa 1px solid;
+		FONT-FAMILY: Verdana, tahoma, ±¼¸²;
+		HEIGHT: 18px;
+		COLOR: #999999;
+		BACKGROUND-COLOR: #fafafa;
 	}
 	.input2
 	{

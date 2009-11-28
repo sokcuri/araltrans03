@@ -1,3 +1,6 @@
+
+String.prototype.trim = function(){	return this.replace(/(^\s*)|(\s*$)/gi,"");}
+
 // Get HTML Object
 function getObject(objectId) 
 { 
@@ -215,4 +218,135 @@ function updateAralTrans()
 	if(nRes != -1) bRetVal = true;
 
 	return bRetVal;
+}
+
+function showOpen()
+{
+	var strResult = null;
+
+	var objDialog = new ActiveXObject("MSComDlg.CommonDialog");
+	objDialog.DialogTitle = "SaveAs";
+	objDialog.Filter = "Scripts|*.vbs;*.hta;*.wsf;*.js|Text Files|*.txt|All files|*.*";
+	objDialog.MaxFileSize = 255;
+	var intResult = objDialog.ShowSave();
+	if(intResult != 0)
+	{
+		strResult = objDialog.FileName;
+	}
+
+	return strResult;
+}
+
+function showOpen(filter, defaultpath)
+{
+	var strResult = null;
+
+	var cdlCancel = 32755;
+	var cdlOFNOverwritePrompt = 2;
+	var cdlOFNHideReadOnly = 4;
+	var cdlOFNNoChangeDir = 8;
+	var cdlOFNAllowMultiselect = 512;
+	var cdlOFNFileMustExist = 4096;
+	var cdlOFNExplorer = 524288;
+
+	var objDialog = new ActiveXObject("MSComDlg.CommonDialog.1");
+	objDialog.Flags = cdlOFNHideReadOnly + cdlOFNExplorer + cdlOFNFileMustExist + cdlOFNNoChangeDir;  
+	objDialog.DialogTitle = "Open";
+	if(filter && filter != "")
+	{
+		objDialog.Filter = filter;
+	}
+	else
+	{
+		objDialog.Filter = "All files (*.*)|*.*||";
+	}
+
+	objDialog.InitDir = "";
+	objDialog.FileName = "";
+	objDialog.FilterIndex = 0;
+	if(defaultpath && defaultpath != "")
+	{
+		fso = new ActiveXObject("Scripting.FileSystemObject");
+		if(fso.FolderExists(defaultpath))
+		{
+			objDialog.InitDir = defaultpath;
+		}
+		else
+		{
+			var nStrIdx = defaultpath.lastIndexOf('\\');
+			if(nStrIdx != -1)
+			{
+				objDialog.InitDir = defaultpath.substr(0, nStrIdx);
+				if(nStrIdx+1 < defaultpath.length) objDialog.FileName = defaultpath.substr(nStrIdx+1);
+			}
+		}
+	}
+
+	objDialog.MaxFileSize = 8000;
+	objDialog.CancelError = true;
+	try
+	{
+		objDialog.ShowOpen();
+		strResult = objDialog.FileName;
+	}
+	catch(ex){}
+
+	return strResult;
+}
+
+function showSave(filter, defaultpath)
+{
+	var strResult = null;
+
+	var cdlCancel = 32755;
+	var cdlOFNOverwritePrompt = 2;
+	var cdlOFNHideReadOnly = 4;
+	var cdlOFNNoChangeDir = 8;
+	var cdlOFNAllowMultiselect = 512;
+	var cdlOFNFileMustExist = 4096;
+	var cdlOFNExplorer = 524288;
+
+	var objDialog = new ActiveXObject("MSComDlg.CommonDialog.1");
+	objDialog.Flags = cdlOFNHideReadOnly + cdlOFNExplorer + cdlOFNOverwritePrompt + cdlOFNNoChangeDir;
+	objDialog.DialogTitle = "Save";
+	if(filter && filter != "")
+	{
+		objDialog.Filter = filter;
+	}
+	else
+	{
+		objDialog.Filter = "All files (*.*)|*.*||";
+	}
+	objDialog.FilterIndex = 0;
+
+	objDialog.InitDir = "";
+	objDialog.FileName = "";
+	if(defaultpath && defaultpath != "")
+	{
+		fso = new ActiveXObject("Scripting.FileSystemObject");
+		if(fso.FolderExists(defaultpath))
+		{
+			objDialog.InitDir = defaultpath;
+		}
+		else
+		{
+			var nStrIdx = defaultpath.lastIndexOf('\\');
+			if(nStrIdx != -1)
+			{
+				objDialog.InitDir = defaultpath.substr(0, nStrIdx);
+				if(nStrIdx+1 < defaultpath.length) objDialog.FileName = defaultpath.substr(nStrIdx+1);
+			}
+		}
+	}
+
+	objDialog.MaxFileSize = 8000;
+	objDialog.CancelError = true;
+	try
+	{
+		objDialog.ShowSave();
+		strResult = objDialog.FileName;
+	}
+	catch(ex){}
+
+	return strResult;
 }
