@@ -167,11 +167,24 @@ extern "C" __declspec(dllexport) BOOL __stdcall OnPluginInit(HWND hAralWnd, LPWS
 			throw _T("Failed to hook 'DrawTextExW'!");
 
 		// Prevent Applocale Redirection
-		//g_pfnOrigMultiByteToWideChar =
-		//	(PROC_MultiByteToWideChar) CRegistryMgr::RegReadDWORD(_T("HKEY_CURRENT_USER\\Software\\AralGood"), _T("M2WAddr"));
+		HKEY hCategoryKey = HKEY_CURRENT_USER;
+		HKEY hKey = NULL;
+		LONG lRet = RegOpenKeyEx(hCategoryKey, _T("Software\\AralGood"), 0, KEY_READ, &hKey);
 
-		//g_pfnOrigWideCharToMultiByte =
-		//	(PROC_WideCharToMultiByte) CRegistryMgr::RegReadDWORD(_T("HKEY_CURRENT_USER\\Software\\AralGood"), _T("W2MAddr"));
+		// 키를 여는데 성공했다면
+		if(lRet == ERROR_SUCCESS)
+		{
+			DWORD type = REG_DWORD;
+			DWORD size = MAX_PATH*2;
+			BYTE dir[MAX_PATH*2];
+
+			if(RegQueryValueEx(hKey, _T("M2WAddr"), 0, &type, (LPBYTE)&dir, &size) == ERROR_SUCCESS)
+				memcpy( &g_pfnOrigMultiByteToWideChar, &dir, sizeof(DWORD) );
+
+			if(RegQueryValueEx(hKey, _T("W2MAddr"), 0, &type, (LPBYTE)&dir, &size) == ERROR_SUCCESS)
+				memcpy( &g_pfnOrigWideCharToMultiByte, &dir, sizeof(DWORD) );
+		}
+
 
 		// 옵션 스트링 파싱
 		g_wszPluginOption = wszPluginOption;

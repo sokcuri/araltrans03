@@ -253,11 +253,11 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath="..\DummyFilter\ReadMe.txt"
+			RelativePath=".\ReadMe.txt"
 			>
 		</File>
 		<File
-			RelativePath=".\ReadMe.txt"
+			RelativePath="..\DummyFilter\ReadMe.txt"
 			>
 		</File>
 	</Files>
