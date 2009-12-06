@@ -1,0 +1,10 @@
+; Kirikiri.def : DLL에 대한 모듈 매개 변수를 정의합니다.
+
+LIBRARY      "Kirikiri"
+
+EXPORTS
+	GetPluginInfo			@1
+
+	OnPluginInit			@2
+	OnPluginClose			@3
+	OnPluginOption			@4
