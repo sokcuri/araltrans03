@@ -1,0 +1,17 @@
+; ATLAS.def : DLL에 대한 모듈 매개 변수를 정의합니다.
+
+LIBRARY      "ATLAS"
+
+SECTIONS
+  .ATLASG READ WRITE SHARED
+
+EXPORTS
+
+	GetPluginInfo	@1
+	OnPluginInit	@2
+	OnPluginOption	@3
+	OnPluginClose	@4
+	OnObjectInit	@5
+	OnObjectClose	@6
+	OnObjectMove	@7
+	OnObjectOption	@8
