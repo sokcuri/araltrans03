@@ -73,7 +73,7 @@ void CNewHookDlg::OnBnClickedOk()
 		{
 			m_strModuleName = _T("");
 			UINT_PTR pCodePoint = NULL;
-			_stscanf(m_strHookAddr, _T("%x"), &pCodePoint);
+			_stscanf_s(m_strHookAddr, _T("%x"), &pCodePoint);
 
 			for(int i=0; i<m_nModCnt; i++)
 			{

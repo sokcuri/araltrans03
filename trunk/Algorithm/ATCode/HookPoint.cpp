@@ -712,7 +712,7 @@ BOOL CHookPoint::OverwriteTextBytes( LPVOID pDest, LPVOID pSrc, BOOL bWideChar, 
 			len += addval;
 		}
 
-		memcpy(szDest, szSrc, (len+1));
+		memcpy(szDest, szSrc, len);
 		while(len<nDestLen)
 		{
 			szDest[len] = ' ';

@@ -72,7 +72,7 @@ BOOL CMemoryDlg::OnInitDialog()
 
 void CMemoryDlg::OnLbnDblclkList1()
 {
-	OnOK();
+	OnBnClickedOk();
 }
 
 void CMemoryDlg::OnBnClickedCheck1()
@@ -96,5 +96,12 @@ void CMemoryDlg::OnBnClickedCheck1()
 void CMemoryDlg::OnBnClickedOk()
 {
 	UpdateData();
+	m_strMemName = m_strMemName.Trim();
+	if(m_strMemName.IsEmpty())
+	{
+		MessageBox(_T("Please enter the context name."), _T("AT Code"), MB_OK);
+		return;
+	}
+	
 	OnOK();
 }
