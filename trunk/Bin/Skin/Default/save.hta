@@ -1,0 +1,691 @@
+<HTML>
+<HEAD>
+	<TITLE>Save Setting</TITLE>
+	<HTA:APPLICATION ID="ATHTA_save" 
+		APPLICATIONNAME="AralTrans 0.3 Save Setting" 
+		BORDER="thin"
+		CAPTION="yes"
+		ICON="../../AralTrans.exe"
+		SHOWINTASKBAR="yes"
+		SINGLEINSTANCE="yes"
+		SYSMENU="yes"
+		WINDOWSTATE="normal"
+		CONTEXTMENU="yes"
+		MAXIMIZEBUTTON="no"
+		MINIMIZEBUTTON="yes"
+		NAVIGABLE="no"
+		SCROLL="yes"
+		SELECTION="no"
+		>
+	<meta http-equiv="Content-Type" content="text/html">
+	<meta http-equiv="Cache-Control" content="No-Cache">
+	<meta http-equiv="Pragma" content="No-Cache">
+	<meta http-equiv="expires" content="now">
+	<meta http-equiv="MSThemeCompatible" content="Yes">
+	<link rel="stylesheet" href="../Common/common.css" type="text/css">
+	<script src="../Common/common.js" type="text/javascript"></script>
+
+<SCRIPT language="javascript">
+<!--
+
+window.resizeTo(500,500);
+
+var objAralTransApp = new ActiveXObject("AralTrans.Application");
+
+var objProcess = window.dialogArguments;
+if(!objProcess)
+{
+	// try to parse command line
+	try
+	{
+		var cmdLine = ATHTA_save.commandLine;
+		var nStartIdx = cmdLine.toUpperCase().indexOf("SAVE.HTA") + 9;
+		if(cmdLine.charAt(nStartIdx) == ' ') nStartIdx++;
+		if(cmdLine.charAt(nStartIdx) == '\"') nStartIdx++;
+		var nCopyLen = cmdLine.length - nStartIdx;
+		if(cmdLine.charAt(cmdLine.length-1) == '\"') nCopyLen--;
+
+		var strPID = cmdLine.substr(nStartIdx, nCopyLen);
+		if(isNumeric(strPID) == false) throw strPID + " is not valid process id";
+
+		var cnt = objAralTransApp.GetProcessCount();
+		for(var i=0; i<cnt; i++)
+		{
+			if(objAralTransApp.GetProcess(i).GetProcessID() == strPID)
+			{
+				objProcess = objAralTransApp.GetProcess(i);
+				break;
+			}
+		}
+
+		if(!objProcess) throw "Could not find process ID " + strPID;
+	}
+	catch(ex)
+	{
+		alert("Invalid Process ID or Object!\r\n" + ex.toString());
+		window.close();
+	}
+}
+
+var objATContainer = objProcess.ATContainer;
+if(!objATContainer)
+{
+	alert("Failed to get ATContainer Object!");
+	window.close();
+}
+
+function Save()
+{	
+	var strXmlFilePathName = getObject("textXmlFilePathName").value.trim();
+	var strXmlFileFolder;
+	var strXmlFileName;
+	
+	// Check the file name is correct
+	if(strXmlFilePathName == "")
+	{
+		alert("Please enter the setting file name!");
+		getObject("textXmlFilePathName").focus();
+		return;
+	}
+
+	var nStrIdx = strXmlFilePathName.lastIndexOf("\\");
+	if(nStrIdx == strXmlFilePathName.length-1)
+	{
+		alert("Invalid setting file name!");
+		getObject("textXmlFilePathName").focus();
+		return;		
+	}
+	else if(nStrIdx == -1)
+	{
+		strXmlFileFolder = objProcess.GetExecutionFileFolder() + "\\ATData";
+		strXmlFileName = strXmlFilePathName;
+	}
+	else
+	{
+		strXmlFileFolder = strXmlFilePathName.substr(0, nStrIdx);
+		strXmlFileName = strXmlFilePathName.substr(nStrIdx+1);
+	}
+
+	// Check the directory is correct
+	var fso = new ActiveXObject("Scripting.FileSystemObject");
+	if(fso.FolderExists(strXmlFileFolder) == false)
+	{
+		alert("Invalid folder!");
+		getObject("textXmlFilePathName").focus();
+		return;
+	}
+
+	// Check the file extention is correct
+	if(strXmlFileName.toLowerCase().lastIndexOf(".ats") == -1)
+	{
+		strXmlFileName = strXmlFileName + ".ats";
+	}
+
+	// Make Full-pathname
+	strXmlFilePathName = strXmlFileFolder + "\\" + strXmlFileName;
+
+	// Create XML Object
+	xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+	xmlDoc.async = false;
+	var pi = xmlDoc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"utf-8\"");
+	xmlDoc.appendChild(pi);
+
+	// Create Root Element
+	var eRoot = xmlDoc.createElement("AralTransSettings");
+	xmlDoc.appendChild(eRoot);
+
+	// Create Setting Element
+	var eSetting = xmlDoc.createElement("Setting");
+	eRoot.appendChild(eSetting);
+
+	
+	// Add Basic Informations into 'Setting'
+	var eTmp;
+
+	eTmp = xmlDoc.createElement("ExecutionFileName");
+	eTmp.text = objProcess.GetExecutionFileName();
+	eSetting.appendChild(eTmp);
+
+	eTmp = xmlDoc.createElement("ExecutionFileFolder");
+	eTmp.text = objProcess.GetExecutionFileFolder();
+	eSetting.appendChild(eTmp);
+	
+	eTmp = xmlDoc.createElement("ExecutionFileVersion");
+	eTmp.text = objProcess.GetExecutionFileVersion();
+	eSetting.appendChild(eTmp);
+
+	eTmp = xmlDoc.createElement("ExecutionFileHash");
+	eTmp.text = objProcess.GetExecutionFileHash();
+	eSetting.appendChild(eTmp);
+
+	eTmp = xmlDoc.createElement("SettingAuthor");
+	eTmp.text = getObject("textSettingAuthor").value;
+	eSetting.appendChild(eTmp);
+
+	eTmp = xmlDoc.createElement("SettingName");
+	eTmp.text = getObject("textSettingName").value;
+	eSetting.appendChild(eTmp);
+
+	eTmp = xmlDoc.createElement("SettingDescription");
+	eTmp.text = getObject("textSettingDescription").value;
+	eSetting.appendChild(eTmp);
+
+	eTmp = xmlDoc.createElement("SettingThumbnailUrl");
+	eTmp.text = getObject("textSettingThumbnailUrl").value;
+	eSetting.appendChild(eTmp);
+	
+	eTmp = xmlDoc.createElement("Delay");
+	eTmp.text = getObject("textDelay").value;
+	eSetting.appendChild(eTmp);
+	
+	eTmp = xmlDoc.createElement("LocaleProgram");
+	eTmp.text = getObject("comboLocaleProgram").value;
+	eSetting.appendChild(eTmp);
+
+	eTmp = xmlDoc.createElement("LocaleProgramOption");
+	if(getObject("comboLocaleProgram").selectedIndex == 1)
+	{
+		eTmp.text = getObject("comboAppLocaleOption").value;
+	}
+	else
+	{
+		eTmp.text = "";
+	}	
+	eSetting.appendChild(eTmp);
+
+
+	// Add 'DataList' element into 'Setting'
+	var eDataList = xmlDoc.createElement("DataList");
+	var rowsData = document.all.tblDataFileList.rows;
+	for(var i=1; i<rowsData.length; i++)
+	{
+		var eData = xmlDoc.createElement("Data");
+
+		var strDataFilePathName = rowsData[i].all.textDataFilePath.value.trim();
+		var nStrIdx2 = strDataFilePathName.lastIndexOf("\\");
+		var strDataFileFolder = strDataFilePathName.substr(0, nStrIdx2);
+		var strDataFileName = strDataFilePathName.substr(nStrIdx2+1);
+		var strDataDownloadUrl = rowsData[i].all.textDataDownloadUrl.value.trim();
+
+		eTmp = xmlDoc.createElement("DataFileFolder");
+		eTmp.text = strDataFileFolder;
+		eData.appendChild(eTmp);
+
+		eTmp = xmlDoc.createElement("DataFileName");
+		eTmp.text = strDataFileName;
+		eData.appendChild(eTmp);
+
+		eTmp = xmlDoc.createElement("DownloadUrl");
+		eTmp.text = strDataDownloadUrl;
+		eData.appendChild(eTmp);
+
+		eDataList.appendChild(eData);
+	}
+
+	eSetting.appendChild(eDataList);
+	
+	
+	// Add 'PluginList' element into 'Setting'
+	var ePluginList = xmlDoc.createElement("PluginList");
+	var rowsPlugin = document.all.tblPluginFileList.rows;
+	var p_cnt = objATContainer.GetPluginCount();
+	for(var i=0; i<p_cnt; i++)
+	{
+		var plugin = objATContainer.GetPlugin(i);
+		if(!plugin) continue;
+		var ePlugin = xmlDoc.createElement("Plugin");
+		
+		eTmp = xmlDoc.createElement("PluginFileFolder");
+		var strAppDir = objProcess.GetExecutionFileFolder();
+		eTmp.text = encodePath(plugin.GetPluginFileFolder(), strAppDir);
+		ePlugin.appendChild(eTmp);
+
+		eTmp = xmlDoc.createElement("PluginFileName");
+		eTmp.text = plugin.GetPluginFileName();
+		ePlugin.appendChild(eTmp);
+		
+		eTmp = xmlDoc.createElement("PluginFileHash");
+		eTmp.text = objAralTransApp.GetFileHash(plugin.GetPluginFileFolder() + "\\" + plugin.GetPluginFileName());
+		ePlugin.appendChild(eTmp);
+
+		eTmp = xmlDoc.createElement("PluginFileVersion");
+		eTmp.text = objAralTransApp.GetFileVersion(plugin.GetPluginFileFolder() + "\\" + plugin.GetPluginFileName());
+		ePlugin.appendChild(eTmp);
+
+		eTmp = xmlDoc.createElement("DownloadUrl");
+		eTmp.text = rowsPlugin[i+1].all.textPluginDownloadUrl.value; //plugin.GetDownloadUrl();
+		ePlugin.appendChild(eTmp);
+
+		eTmp = xmlDoc.createElement("PluginName");
+		eTmp.text = plugin.GetPluginName();
+		ePlugin.appendChild(eTmp);
+
+		eTmp = xmlDoc.createElement("PluginType");
+		eTmp.text = plugin.GetPluginType();
+		ePlugin.appendChild(eTmp);
+
+		eTmp = xmlDoc.createElement("PluginOption");
+		eTmp.text = plugin.GetPluginOption();
+		ePlugin.appendChild(eTmp);
+
+		ePluginList.appendChild(ePlugin);
+	} 
+
+	eSetting.appendChild(ePluginList);
+	
+	
+	// Add 'ContextList' element into 'Setting'
+	var eContextList = xmlDoc.createElement("ContextList");
+	var c_cnt = objATContainer.GetContextCount();
+	for(var i=0; i<c_cnt; i++)
+	{
+		var context = objATContainer.GetContext(i);
+		if(!context) continue;
+		
+		// Create 'Context' element
+		var eContext = xmlDoc.createElement("Context");
+
+		// Create and Add 'ContextName' element to 'Context'
+		eTmp = xmlDoc.createElement("ContextName");
+		eTmp.text = context.GetContextName();
+		eContext.appendChild(eTmp);
+
+		// Create and Add 'ObjectList' element to 'Context'
+		var eObjectList = xmlDoc.createElement("ObjectList");
+		var obj_cnt = context.GetTransObjectCount();
+		for(var j=0; j<obj_cnt; j++)
+		{
+			var eObject = xmlDoc.createElement("Object");
+
+			eTmp = xmlDoc.createElement("ObjectName");
+			eTmp.text = context.GetTransObjectName(j);
+			eObject.appendChild(eTmp);
+			
+			eTmp = xmlDoc.createElement("ObjectOption");
+			eTmp.text = context.GetTransObjectOption(j);
+			eObject.appendChild(eTmp);
+			
+			eObjectList.appendChild(eObject);
+		}
+		eContext.appendChild(eObjectList);		
+
+		// Add 'Context' element to 'ContextList'
+		eContextList.appendChild(eContext);
+	} 
+
+	eSetting.appendChild(eContextList);
+
+	
+	// Save to file
+	xmlDoc.save(strXmlFilePathName); 
+	alert("Setting was saved successfully.");
+	window.close();
+}
+
+function onClickBrowse()
+{	
+	var strResult = "";
+	
+	strResult = showSave("AralTrans Setting (*.ats)|*.ats|All Files (*.*)|*.*||");
+	if(strResult)
+	{	
+		if(strResult.toLowerCase().lastIndexOf(".ats") == -1)
+			strResult = strResult + ".ats";
+
+		getObject("textXmlFilePathName").value = strResult;
+	}
+
+}
+
+
+function addPluginFile(strPluginFilePath, strDownloadUrl)
+{
+	if(!strDownloadUrl || strDownloadUrl == "") strDownloadUrl = "http://";
+	
+	// Add to table
+	var table = document.all.tblPluginFileList;
+	
+	/*
+	var oRow1 = table.insertRow();
+	oRow1.height = 22;
+	var oRow2 = table.insertRow();
+	oRow2.height = 22;
+	var oCell1_1 = oRow1.insertCell();
+	var oCell1_2 = oRow1.insertCell();
+	var oCell2_1 = oRow2.insertCell();
+	var oCell2_2 = oRow2.insertCell();
+
+	oCell1_1.style.width = 100;
+	oCell1_1.style.borderTop = "#AAAAAA solid 2px";
+	oCell1_1.className = "head3";
+	oCell1_1.innerHTML = "Plugin Path";
+
+	oCell1_2.style.width = 335;
+	oCell1_2.style.borderTop = "#AAAAAA solid 2px";
+	oCell1_2.className = "white";
+	oCell1_2.innerHTML = "<INPUT type='text' name='textPluginFilePath' value='" + strPluginFilePath + "' class='readonly' style='width:320px;' readonly>";
+
+	oCell2_1.style.width = 100;
+	oCell2_1.className = "head3";
+	oCell2_1.innerHTML = "Download URL";
+
+	oCell2_2.style.width = 335;
+	oCell2_2.className = "white";
+	oCell2_2.innerHTML = "<INPUT type='text' name='textPluginDownloadUrl' value='" + strDownloadUrl + "' class='input2' style='width:320px;'>";
+	*/
+
+	var oRow1 = table.insertRow();
+	oRow1.height = 42;
+	var oCell1_1 = oRow1.insertCell();
+	var oCell1_2 = oRow1.insertCell();
+
+	oCell1_1.style.width = 100;
+	oCell1_1.style.borderTop = "#AAAAAA solid 2px";
+	oCell1_1.className = "head3";
+	oCell1_1.innerHTML = "Download URL";
+
+	oCell1_2.style.width = 335;
+	oCell1_2.style.borderTop = "#AAAAAA solid 2px";
+	oCell1_2.className = "white";
+	oCell1_2.innerHTML = "<INPUT type='text' name='textPluginFilePath' value='" + strPluginFilePath + "' class='readonly' style='width:328px;' readonly><br /><INPUT type='text' name='textPluginDownloadUrl' value='" + strDownloadUrl + "' class='input2' style='width:328px;'>";
+}
+
+function addDataFile()
+{
+	var table = document.all.tblDataFileList;
+
+	// Browse data file
+	var strATDataDir = objProcess.GetExecutionFileFolder() + "\\ATData";
+	strDataFilePath = showOpen("All Files (*.*)|*.*||", strATDataDir);
+	if(!strDataFilePath) return;
+
+	// Encode Data File Path
+	var strAppDir = objProcess.GetExecutionFileFolder();
+	strDataFilePath = encodePath(strDataFilePath, strAppDir);
+
+	// Duplication Check
+	for(var i=1; i<table.rows.length; i++)
+	{
+		if(table.rows[i].all.textDataFilePath.value == strDataFilePath)
+		{
+			alert("The file '" + strDataFilePath + "' already exists.");
+			return;
+		}
+	}
+	
+	// Add to table
+	/*
+	var oRow1 = table.insertRow();
+	oRow1.height = 28;
+	var oRow2 = table.insertRow();
+	oRow2.height = 28;
+	var oCell1_1 = oRow1.insertCell();
+	var oCell1_2 = oRow1.insertCell();
+	var oCell2_1 = oRow2.insertCell();
+	var oCell2_2 = oRow2.insertCell();
+
+	oCell1_1.style.width = 100;
+	oCell1_1.style.borderTop = "#AAAAAA solid 2px";
+	oCell1_1.className = "head3";
+	oCell1_1.innerHTML = "Data Path";
+
+	oCell1_2.style.width = 335;
+	oCell1_2.style.borderTop = "#AAAAAA solid 2px";
+	oCell1_2.className = "white";
+	oCell1_2.innerHTML = "<INPUT type='text' name='textDataFilePath' value='" + strDataFilePath + "' class='readonly' style='width:310;' readonly><IMG src='img/btn_delete1.gif' onclick='deleteDataFile(this)' class='hand' style='vertical-align:top;margin-left:3px;margin-top:1px;'>";
+
+	oCell2_1.style.width = 100;
+	oCell2_1.className = "head3";
+	oCell2_1.innerHTML = "Download URL";
+
+	oCell2_2.style.width = 335;
+	oCell2_2.className = "white";
+	oCell2_2.innerHTML = "<INPUT type='text' name='textDataDownloadUrl' value='http://' class='input2' style='width:100%;'>";
+
+	oCell2_2.all.textDataDownloadUrl.focus();
+	*/
+
+	var oRow1 = table.insertRow();
+	oRow1.height = 42;
+	var oCell1_1 = oRow1.insertCell();
+	var oCell1_2 = oRow1.insertCell();
+
+	oCell1_1.style.width = 100;
+	oCell1_1.style.borderTop = "#AAAAAA solid 2px";
+	oCell1_1.className = "head3";
+	oCell1_1.innerHTML = "Download URL";
+
+	oCell1_2.style.width = 335;
+	oCell1_2.style.borderTop = "#AAAAAA solid 2px";
+	oCell1_2.className = "white";
+	oCell1_2.innerHTML = "<INPUT type='text' id='textDataFilePath' name='textDataFilePath' value='" + strDataFilePath + "' class='readonly' style='width:310;' readonly><IMG src='img/btn_delete1.gif' onclick='deleteDataFile(this)' class='hand' style='vertical-align:top;margin-left:3px;margin-top:1px;'><br /><INPUT type='text' name='textDataDownloadUrl' value='http://' class='input2' style='width:100%;'>";
+
+	oCell1_2.all.textDataDownloadUrl.focus();
+
+}
+
+function deleteDataFile(input)
+{
+	var table = document.all.tblDataFileList;
+	var index = input.parentNode.parentNode.rowIndex;
+	//table.deleteRow(index+1);
+	table.deleteRow(index);
+}
+
+function onLocaleProgramChanged()
+{
+	if(getObject("comboLocaleProgram").selectedIndex == 1)
+	{
+		getObject("comboAppLocaleOption").style.visibility = "visible";
+	}
+	else
+	{
+		getObject("comboAppLocaleOption").style.visibility = "hidden";
+	}
+}
+
+function init()
+{
+	var strAppDir = objProcess.GetExecutionFileFolder();
+
+	// Execution Info.
+	getObject("textExecutionFilePath").value = strAppDir + "\\" + objProcess.GetExecutionFileName();
+	getObject("textExecutionFileHash").value = objProcess.GetExecutionFileHash();
+
+	// Plugin File List
+	var p_cnt = objATContainer.GetPluginCount();
+	for(var i=0; i<p_cnt; i++)
+	{
+		var plugin = objATContainer.GetPlugin(i);
+		if(!plugin) continue;
+		
+		var strPluginFilePath = encodePath(plugin.GetPluginFileFolder() + "\\" + plugin.GetPluginFileName(), strAppDir);
+		var strDownloadUrl = plugin.GetDownloadUrl();
+		addPluginFile(strPluginFilePath, strDownloadUrl);		
+	} 
+}
+
+//-->
+</SCRIPT>
+
+</HEAD>
+
+
+
+<BODY  style="padding:50 0 0 10; margin:0 0 0 0;" bgcolor="black" onload="init();">
+
+<!-- Start of File Path -->
+<table width="452" border="0" cellpadding="0" cellspacing="0">
+	<tr height="30" style="background-image:url(img/bg_graybox_top.gif);background-repeat:no-repeat;background-position-x:left;background-position-y:top;">
+		<td style="color:#527A85;font-size:9pt;font-weight:bold;font-style:italic;padding-top:3px;padding-left:10px;vertical-align:top;">
+			Setting File Path
+		</td>
+	</tr>
+	<tr>
+		<td align="center" bgcolor="#B3B3B3">
+			
+			<!-- Inner Table -->			
+			<table width="435" border="1" bordercolor="#AAAAAA" style="border-collapse:collapse;border:1px solid #AAAAAA;">
+				<tr>
+					<td width="100" class="head2">File Path</td>
+					<td width="335" class="white">
+						<INPUT type="text" name="textXmlFilePathName" value="" class="input2" style="width:82%;"><input type="button" name="btnBrowse" value="Browse" class="button1" style="width:18%;height:19px;" onClick="onClickBrowse();">
+					</td>
+				</tr>
+			</table>
+			<!--// Inner Table -->
+
+		</td>
+	</tr>
+	<tr height="9" style="background-image:url(img/bg_graybox_bottom.gif);background-repeat:no-repeat;background-position-x:left;background-position-y:top;">
+		<td>
+		</td>
+	</tr>
+</table>
+<!-- End of File Path -->
+
+<br>
+
+<!-- Start of Author Information -->
+<table width="452" border="0" cellpadding="0" cellspacing="0">
+	<tr height="30" style="background-image:url(img/bg_graybox_top.gif);background-repeat:no-repeat;background-position-x:left;background-position-y:top;">
+		<td style="color:#527A85;font-size:9pt;font-weight:bold;font-style:italic;padding-top:3px;padding-left:10px;vertical-align:top;">
+			Setting Info.
+		</td>
+	</tr>
+	<tr>
+		<td align="center" bgcolor="#B3B3B3">
+			
+			<!-- Inner Table -->			
+			<table width="435" border="1" bordercolor="#AAAAAA" style="border-collapse:collapse;border:1px solid #AAAAAA;">
+				<tr>
+					<td width="100" class="head2">Author Name</td>
+					<td width="335" class="white"><INPUT type="text" name="textSettingAuthor" value="아무개" class="input2" style="width:50%;"></td>
+				</tr>
+				<tr>
+					<td width="100" class="head2">Setting Name</td>
+					<td width="335" class="white"><INPUT type="text" name="textSettingName" value="어떤 세팅" class="input2" style="width:50%;"></td>
+				</tr>
+				<tr>
+					<td width="100" class="head2">Description</td>
+					<td width="335" class="white"><textarea name="textSettingDescription" class="textarea1" rows="3" style="width:100%;">테스트 세팅입니다.</textarea></td>
+				</tr>
+				<tr>
+					<td width="100" class="head2">Thumbnail URL</td>
+					<td width="335" class="white"><INPUT type="text" name="textSettingThumbnailUrl" value="http://" class="input2" style="width:100%;"></td>
+				</tr>
+			</table>
+			<!--// Inner Table -->
+
+		</td>
+	</tr>
+	<tr height="9" style="background-image:url(img/bg_graybox_bottom.gif);background-repeat:no-repeat;background-position-x:left;background-position-y:top;">
+		<td>
+		</td>
+	</tr>
+</table>
+<!-- End of Author Information -->
+
+<br>
+
+<!-- Start of Yellowbox -->
+<table width="452" border="0" cellpadding="0" cellspacing="0">
+	<tr height="30" style="background-image:url(img/bg_yellowbox_top.gif);background-repeat:no-repeat;background-position-x:left;background-position-y:top;">
+		<td style="color:#527A85;font-size:9pt;font-weight:bold;font-style:italic;padding-top:3px;padding-left:10px;vertical-align:top;">
+			Execution Info.
+		</td>
+	</tr>
+	<tr>
+		<td align="center" bgcolor="#BFBEA9">
+			
+			<!-- Inner Table -->			
+			<table width="435" border="1" bordercolor="#AAAAAA" style="border-collapse:collapse;border:1px solid #AAAAAA;">
+				<tr>
+					<td width="100" class="head1">EXE File Path</td>
+					<td width="335" class="white"><INPUT type="text" name="textExecutionFilePath" value="" class="readonly" readonly style="width:100%;"></td>
+				</tr>
+				<tr>
+					<td width="100" class="head1">EXE File Hash</td>
+					<td width="335" class="white"><INPUT type="text" name="textExecutionFileHash" value="" class="readonly" readonly style="width:100%;"></td>
+				</tr>
+				<tr>
+					<td width="100" class="head1">Locale Program</td>
+					<td width="335" class="white">
+						<select name="comboLocaleProgram" class="select1" onchange="onLocaleProgramChanged();">
+							<option value="">none</option>
+							<option value="AppLocale">AppLocale</option>
+							<option value="JonK">JonK</option>
+							<option value="KonJ">KonJ</option>
+						</select>
+						<select name="comboAppLocaleOption" class="select1" style="visibility:hidden;">
+							<option value="/L411">Japanese(/L411)</option>
+							<option value="/L412">Korean(/L412)</option>
+							<option value="/L804">Chinese(/L804)</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td width="100" class="head1">Hooking Delay</td>
+					<td width="335" class="white"><INPUT type="text" name="textDelay" value="0" class="input2" maxlength=3 style="width:30px;"> sec</td>
+				</tr>
+			</table>
+			<!--// Inner Table -->
+
+		</td>
+	</tr>
+	<tr height="9" style="background-image:url(img/bg_yellowbox_bottom.gif);background-repeat:no-repeat;background-position-x:left;background-position-y:top;">
+		<td>
+		</td>
+	</tr>
+</table>
+<!-- End of Yellowbox -->
+
+<br>
+
+<!-- Start of Redbox -->
+<table width="452" border="0" cellpadding="0" cellspacing="0">
+	<tr height="30" style="background-image:url(img/bg_redbox_top.gif);background-repeat:no-repeat;background-position-x:left;background-position-y:top;">
+		<td style="color:#527A85;font-size:9pt;font-weight:bold;font-style:italic;padding-top:3px;padding-left:10px;vertical-align:top;">
+			File Download URL
+		</td>
+	</tr>
+	<tr>
+		<td align="center" bgcolor="#BFAEA7">
+			
+			<!-- Inner Table -->			
+			<table id="tblPluginFileList" width="435" border="1" bordercolor="#AAAAAA" style="border-collapse:collapse;border:1px solid #AAAAAA;">
+				<tr>
+					<td colspan="2" style="background-color:#f8e8df;color:#527A85;font-size:9pt;font-weight:bold;font-style:italic;padding-left:10px;">
+						Plugin File List
+					</td>
+				</tr>
+			</table>
+			<table id="tblDataFileList" width="435" border="1" bordercolor="#AAAAAA" style="border-collapse:collapse;border:1px solid #AAAAAA;margin-top:10px;">
+				<tr>
+					<td colspan="2" style="background-color:#f8e8df;">
+						<table width="100%" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="left" style="color:#527A85;font-size:9pt;font-weight:bold;font-style:italic;padding-left:10px;">Data File List</td>
+								<td align="right" style="padding-right:5px;"><img src="img/btn_add.gif" class="hand" onclick="addDataFile();"></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>			
+			<!--// Inner Table -->
+
+		</td>
+	</tr>
+	<tr height="9" style="background-image:url(img/bg_redbox_bottom.gif);background-repeat:no-repeat;background-position-x:left;background-position-y:top;">
+		<td>
+		</td>
+	</tr>
+</table>
+<!-- End of Redbox -->
+
+			
+			
+<center><INPUT type="button" name="btnSave" value="Save" style="width:80px;height:25px;margin:10 10 10 10;font-size:10pt;font-weight:bold;" onClick="Save();"></center>
+
+</BODY>
+</HTML>

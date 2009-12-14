@@ -1,6 +1,7 @@
 <HTML>
 <HEAD>
 	<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+	<link rel="stylesheet" href="../Common/common.css" type="text/css">
 	<script src="../Common/common.js" type="text/javascript"></script>
 	<TITLE>Waiting...</TITLE>
 	<HTA:APPLICATION ID="ATHTA_delay" 
@@ -51,10 +52,10 @@ function countDown()
 
 <!-- Start of layout table -->
 <center>
-	<img src="waiting.gif">
-	<span id="lblRemainingTime"></span>
+	<img src="img/waiting.gif">
+	<span id="lblRemainingTime" class="colresize"></span>
 	<br>
-	<input type="button" name="btnClose" value="Stop waiting" onClick="self.close();">
+	<input type="button" name="btnClose" value="Skip waiting" onClick="self.close();" class="button1">
 </center>
 <!-- End of layout table -->
 
