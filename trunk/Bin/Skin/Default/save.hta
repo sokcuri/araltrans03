@@ -17,13 +17,13 @@
 		SCROLL="yes"
 		SELECTION="no"
 		>
-	<meta http-equiv="Content-Type" content="text/html">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta http-equiv="Cache-Control" content="No-Cache">
 	<meta http-equiv="Pragma" content="No-Cache">
 	<meta http-equiv="expires" content="now">
 	<meta http-equiv="MSThemeCompatible" content="Yes">
-	<link rel="stylesheet" href="../Common/common.css" type="text/css">
-	<script src="../Common/common.js" type="text/javascript"></script>
+	<link rel="stylesheet" href="default.css" type="text/css">
+	<script src="util.js" type="text/javascript"></script>
 
 <SCRIPT language="javascript">
 <!--
@@ -492,6 +492,12 @@ function init()
 	getObject("textExecutionFilePath").value = strAppDir + "\\" + objProcess.GetExecutionFileName();
 	getObject("textExecutionFileHash").value = objProcess.GetExecutionFileHash();
 
+	// Locale Program
+	getObject("comboLocaleProgram").value = objATContainer.GetLocaleProgram();
+	//getObject("comboAppLocaleOption").value = getChildElemText(elemSetting, "LocaleProgramOption");
+	onLocaleProgramChanged();
+	
+
 	// Plugin File List
 	var p_cnt = objATContainer.GetPluginCount();
 	for(var i=0; i<p_cnt; i++)
@@ -512,7 +518,7 @@ function init()
 
 
 
-<BODY  style="padding:50 0 0 10; margin:0 0 0 0;" bgcolor="black" onload="init();">
+<BODY style="padding:50 0 0 10; margin:0 0 0 0;" bgcolor="black" onload="init();">
 
 <!-- Start of File Path -->
 <table width="452" border="0" cellpadding="0" cellspacing="0">
@@ -559,20 +565,20 @@ function init()
 			<!-- Inner Table -->			
 			<table width="435" border="1" bordercolor="#AAAAAA" style="border-collapse:collapse;border:1px solid #AAAAAA;">
 				<tr>
-					<td width="100" class="head2">Author Name</td>
-					<td width="335" class="white"><INPUT type="text" name="textSettingAuthor" value="아무개" class="input2" style="width:50%;"></td>
+					<td width="100" class="head2">Title</td>
+					<td width="335" class="white"><INPUT type="text" name="textSettingName" value="Untitled" class="input2" style="width:100%;"></td>
 				</tr>
 				<tr>
-					<td width="100" class="head2">Setting Name</td>
-					<td width="335" class="white"><INPUT type="text" name="textSettingName" value="어떤 세팅" class="input2" style="width:50%;"></td>
+					<td width="100" class="head2">Author Name</td>
+					<td width="335" class="white"><INPUT type="text" name="textSettingAuthor" value="" class="input2" style="width:50%;"></td>
 				</tr>
 				<tr>
 					<td width="100" class="head2">Description</td>
-					<td width="335" class="white"><textarea name="textSettingDescription" class="textarea1" rows="3" style="width:100%;">테스트 세팅입니다.</textarea></td>
+					<td width="335" class="white"><textarea name="textSettingDescription" class="textarea1" rows="3" style="width:100%;"></textarea></td>
 				</tr>
 				<tr>
 					<td width="100" class="head2">Thumbnail URL</td>
-					<td width="335" class="white"><INPUT type="text" name="textSettingThumbnailUrl" value="http://" class="input2" style="width:100%;"></td>
+					<td width="335" class="white"><INPUT type="text" name="textSettingThumbnailUrl" value="http://" class="input2" style="width:100%;"><br><font color="#bbbbbb">(115 x 115 jpg, gif image recommended)</font></td>
 				</tr>
 			</table>
 			<!--// Inner Table -->
